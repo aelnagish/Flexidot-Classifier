@@ -427,21 +427,21 @@ if __name__ == '__main__':
         # and get the number of the sequence in the FASTA file
         for ltr_element in detected_elements['ltr']:
             x_final, y_final, w_final, h_final = bounding_boxes_of_plots[int(ltr_element)]
-            cv2.rectangle(image_array, (x_final, y_final), (x_final + w_final, y_final + h_final), (0, 128, 128), 8)
+            cv2.rectangle(image_array, (x_final, y_final), (x_final + w_final, y_final + h_final), (128, 128, 0), 8)
 
             ltr_number = num_pdf * 20 + int(ltr_element)
             ltr_list.append(ltr_number)
 
         for tandem_element in detected_elements['tandem']:
             x_final, y_final, w_final, h_final = bounding_boxes_of_plots[int(tandem_element)]
-            cv2.rectangle(image_array, (x_final, y_final), (x_final + w_final, y_final + h_final), (0, 255, 0), 8)
+            cv2.rectangle(image_array, (x_final, y_final), (x_final + w_final, y_final + h_final), (189, 237, 246), 8)
 
             tandem_number = num_pdf * 20 + int(tandem_element)
             tandem_list.append(tandem_number)
 
         for satellite_element in detected_elements['satellite']:
             x_final, y_final, w_final, h_final = bounding_boxes_of_plots[int(satellite_element)]
-            cv2.rectangle(image_array, (x_final, y_final), (x_final + w_final, y_final + h_final), (0, 0, 255), 8)
+            cv2.rectangle(image_array, (x_final, y_final), (x_final + w_final, y_final + h_final), (44, 86, 202), 8)
 
             satellite_number = num_pdf * 20 + int(satellite_element)
             satellite_list.append(satellite_number)
