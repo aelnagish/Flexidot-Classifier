@@ -4,11 +4,6 @@ import numpy as np
 from pdf2image import convert_from_path
 
 
-def contour_sort_key(contour):
-    x, y, _, _ = cv2.boundingRect(contour)
-    return y, x
-
-
 def is_valid_input_path(filepath):
     if not os.path.exists(filepath):
         print(f"Error: File '{filepath}' does not exist.")
@@ -328,15 +323,13 @@ def detect_transposable_elements(input_dir, output_dir):
         img_color = cv2.imread(os.path.join(input_dir, filename), cv2.IMREAD_COLOR)
         img = cv2.imread(os.path.join(input_dir, filename), cv2.IMREAD_GRAYSCALE)
 
-        # Apply a threshold to obtain binary image (already done before)
-        #_, thresh = cv2.threshold(img, 0, 255, cv2.THRESH_OTSU)
-
         # Find contours in the image
         contours, _ = cv2.findContours(img, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
 
         # Sort the contours by area in descending order
         contours = sorted(contours, key=cv2.contourArea, reverse=True)
 
+        # MAIN CONDITIONS
         # Detect LTRs using several conditions and check for tandems and satellites
         if ltr_retrotransposon_check(img, contours):
 
@@ -354,7 +347,6 @@ def detect_transposable_elements(input_dir, output_dir):
                 plot_numbers['ltr'].append(file_number)
         # else:
 
-
         # TODO check for color here and also save it in plot numbers
 
     return plot_numbers
@@ -371,7 +363,9 @@ if __name__ == '__main__':
     output_dir_contours = 'output/contours'
     output_dir_with_masks = 'output/final'
 
-    output_dir_colored = 'output/colored_plots'
+    # Color options
+    find_annotations = True
+    find_combined_annotations = False
 
     # Ensure the output directory exists
     test_output_path(output_dir_with_masks)
@@ -411,10 +405,6 @@ if __name__ == '__main__':
         # Detect single plots and obtain their bounding boxes
         bounding_boxes_of_plots = detect_single_plots(output_dir_images, output_dir_masks)
 
-        # TODO Integrate if statement for switching between detection of transposable elements and color in plots
-        # Detect color within bounding boxes
-        # colored_plot_numbers = detect_colored_plots(output_dir_masks, output_dir_colored)
-        #
         # Remove noise from the masks of the single plots
         remove_noise(output_dir_masks, output_dir_cleaned)
 
@@ -423,25 +413,40 @@ if __name__ == '__main__':
         # Detect transposable elements in the single plots
         detected_elements = detect_transposable_elements(output_dir_cropped, output_dir_contours)
 
+        if find_annotations:
+            # Detect color within bounding boxes
+            output_dir_colored = 'output/colored_plots'
+            colored_plot_numbers = detect_colored_plots(output_dir_masks, output_dir_colored)
+
+            # Set the other option to False
+            print('Find all annotations was selected. Combined annotations are not considered.')
+            find_combined_annotations = False
+        elif find_combined_annotations:
+            colored_plot_numbers = detect_colored_plots(output_dir_masks, output_dir_colored)
+
+            # TODO Check for similar plot numbers with the desired transposable element
+            find_annotations = False
+
+        # TODO Draw annotations
         # Draw bounding boxes of transposable elements on the image
         # and get the number of the sequence in the FASTA file
         for ltr_element in detected_elements['ltr']:
             x_final, y_final, w_final, h_final = bounding_boxes_of_plots[int(ltr_element)]
-            cv2.rectangle(image_array, (x_final, y_final), (x_final + w_final, y_final + h_final), (128, 128, 0), 8)
+            cv2.rectangle(image_array, (x_final, y_final), (x_final + w_final, y_final + h_final), (128, 128, 0), 10)
 
             ltr_number = num_pdf * 20 + int(ltr_element)
             ltr_list.append(ltr_number)
 
         for tandem_element in detected_elements['tandem']:
             x_final, y_final, w_final, h_final = bounding_boxes_of_plots[int(tandem_element)]
-            cv2.rectangle(image_array, (x_final, y_final), (x_final + w_final, y_final + h_final), (189, 237, 246), 8)
+            cv2.rectangle(image_array, (x_final, y_final), (x_final + w_final, y_final + h_final), (60, 237, 246), 10)
 
             tandem_number = num_pdf * 20 + int(tandem_element)
             tandem_list.append(tandem_number)
 
         for satellite_element in detected_elements['satellite']:
             x_final, y_final, w_final, h_final = bounding_boxes_of_plots[int(satellite_element)]
-            cv2.rectangle(image_array, (x_final, y_final), (x_final + w_final, y_final + h_final), (44, 86, 202), 8)
+            cv2.rectangle(image_array, (x_final, y_final), (x_final + w_final, y_final + h_final), (44, 86, 202), 10)
 
             satellite_number = num_pdf * 20 + int(satellite_element)
             satellite_list.append(satellite_number)
