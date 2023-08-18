@@ -427,7 +427,7 @@ if __name__ == '__main__':
         # and get the number of the sequence in the FASTA file
         for ltr_element in detected_elements['ltr']:
             x_final, y_final, w_final, h_final = bounding_boxes_of_plots[int(ltr_element)]
-            cv2.rectangle(image_array, (x_final, y_final), (x_final + w_final, y_final + h_final), (255, 0, 0), 8)
+            cv2.rectangle(image_array, (x_final, y_final), (x_final + w_final, y_final + h_final), (0, 128, 128), 8)
 
             ltr_number = num_pdf * 20 + int(ltr_element)
             ltr_list.append(ltr_number)
