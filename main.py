@@ -40,7 +40,8 @@ def split_pdf_pages(input_dir, output_dir):
     file_name = os.path.basename(input_dir)
     file_name = file_name.split(".")[0]
 
-    images = convert_from_path(input_dir)
+    images = convert_from_path(input_dir,
+                               poppler_path=r'C:\Workspace\poppler\Release-24.02.0-0\poppler-24.02.0\Library\bin')
 
     for i, image in enumerate(images):
 
@@ -57,7 +58,8 @@ def convert_pdf_to_png(input_dir, output_dir):
     file_name = os.path.basename(input_dir)
     file_name = file_name.split(".")[0]
 
-    images = convert_from_path(input_dir)
+    images = convert_from_path(input_dir,
+                               poppler_path=r'C:\Workspace\poppler\Release-24.02.0-0\poppler-24.02.0\Library\bin')
 
     for i, image in enumerate(images):
 
