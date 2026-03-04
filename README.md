@@ -1,7 +1,7 @@
 # Flexidot-Classifier
 
 ## Introduction
-Flexidot-Classifier provides code to the publication [placeholder].
+Flexidot-Classifier provides code to the publication [available on bioRxiv](https://www.biorxiv.org/content/10.64898/2026.03.01.708851v1).
 It serves as a tool for automatically classifying the output of [FlexiDot](https://github.com/flexidot-bio/flexidot) (or other dotplots) using algorithmic methods of image analysis and computer vision.
 Specifically, it reads PDF or PNG files, extracts single plots, and analyzes the image information of the dotplots.
 At the moment it automatically classifies LTRs, satellites and tandems.
@@ -9,9 +9,15 @@ However, the parameters can be adapted to extract any kind of patterns.
 
 If you are using this project for your research, please cite:
 ```
-@article{123,
-    author = {author},
-    title = {title}
+@article {Maiwald2026.03.01.708851,
+	author = {Maiwald, Sophie and Maiwald, Ferdinand and Heitkam, Tony},
+	title = {Hide and seek: de novo identification in sugar beet reveals impact of non-autonomous LTR retrotransposons},
+	year = {2026},
+	doi = {10.64898/2026.03.01.708851},
+	publisher = {Cold Spring Harbor Laboratory},
+	URL = {https://www.biorxiv.org/content/early/2026/03/03/2026.03.01.708851},
+	eprint = {https://www.biorxiv.org/content/early/2026/03/03/2026.03.01.708851.full.pdf},
+	journal = {bioRxiv}
 ```
 
 ## Installation and dependencies
@@ -28,11 +34,11 @@ Create an `input/` folder in the project directory and add your Flexidot plot fi
 
 **Supported input modes:**
 
-| Mode | Description |
-|------|-------------|
+| Mode | Description                                 |
+|------|---------------------------------------------|
 | Single multi-page PDF | One PDF file containing multiple plot pages |
-| Multiple PDFs | Several single-page PDF files |
-| Multiple PNGs | Several PNG images (one plot page per image) |
+| Multiple PDFs | Several single-page PDF files (collages)    |
+| Multiple PNGs | Several PNG images (collages)         |
 
 **Note:** Do not mix PDFs and PNGs in the same folder.
 
