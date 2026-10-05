@@ -56,6 +56,7 @@ Results are saved in `output/final/`:
 | `ltr.txt` | List of detected LTR retrotransposons (sequence numbers) |
 | `tandem.txt` | List of detected tandem repeats (sequence numbers) |
 | `satellite.txt` | List of detected satellites (sequence numbers) |
+| `classification.csv` | One row per plot (including unclassified): `global_index`, `source_file`, `page`, `plot_on_page`, `classification`, and bounding box (`bbox_x`, `bbox_y`, `bbox_w`, `bbox_h`) on the page image |
 
 ## Detection Colors
 

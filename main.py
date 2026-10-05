@@ -5,6 +5,7 @@ This module processes PDF or PNG images of Flexidot plots to identify
 LTR retrotransposons, tandem repeats, and satellite sequences.
 """
 
+import csv
 import cv2
 import os
 import numpy as np
@@ -502,9 +503,11 @@ class ElementDetector:
         FileManager.validate_input(input_dir)
 
         results = {'ltr': [], 'tandem': [], 'satellite': []}
+        self.all_plots = []  # every plot analysed, classified or not (for CSV)
 
         for filename in os.listdir(input_dir):
             file_number = filename.split('_')[0]
+            self.all_plots.append(file_number)
             img = cv2.imread(os.path.join(input_dir, filename), cv2.IMREAD_GRAYSCALE)
 
             contours, _ = cv2.findContours(img, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
@@ -565,6 +568,23 @@ class ResultWriter:
 
         print(f"Results saved to {output_dir}")
 
+    def save_csv(self, output_dir: str, rows: list[dict],
+                 filename: str = 'classification.csv') -> None:
+        """Write one row per detected plot, including unclassified plots."""
+        FileManager.prepare_output_dir(output_dir, clean=False)
+        filepath = os.path.join(output_dir, filename)
+
+        fieldnames = ['global_index', 'source_file', 'page', 'plot_on_page',
+                      'classification', 'bbox_x', 'bbox_y', 'bbox_w', 'bbox_h']
+        rows = sorted(rows, key=lambda r: r['global_index'])
+
+        with open(filepath, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(rows)
+
+        print(f"CSV saved to {filepath}")
+
 
 # =============================================================================
 # MAIN PIPELINE
@@ -579,6 +599,25 @@ class FlexidotClassifier:
         self.processor = ImageProcessor(self.config)
         self.detector = ElementDetector(self.config)
         self.writer = ResultWriter(self.config)
+        self.csv_rows: list[dict] = []
+
+    def _collect_csv_rows(self, source_file: str, page: int, offset: int,
+                          detected: dict[str, list[str]],
+                          bounding_boxes: list[tuple]) -> None:
+        """Record one CSV row per plot on the current page."""
+        label = {num: etype for etype, nums in detected.items() for num in nums}
+
+        for num in sorted(self.detector.all_plots, key=int):
+            idx = int(num)
+            x, y, w, h = bounding_boxes[idx] if idx < len(bounding_boxes) else ("",) * 4
+            self.csv_rows.append({
+                'global_index': offset + idx,
+                'source_file': source_file,
+                'page': page,
+                'plot_on_page': idx,
+                'classification': label.get(num, 'unclassified'),
+                'bbox_x': x, 'bbox_y': y, 'bbox_w': w, 'bbox_h': h,
+            })
 
     def _print_input_summary(self, input_type: InputType, info: dict) -> None:
         """Print a summary of detected input."""
@@ -692,6 +731,10 @@ Remove either the PDFs or PNGs and run again.
             for element_type, plot_nums in detected.items()
         }
 
+        self._collect_csv_rows(Path(filepath).name, 0,
+                               file_index * self.config.plots_per_page,
+                               detected, bounding_boxes)
+
         annotated = self.writer.draw_annotations(image_array, detected, bounding_boxes)
         output_path = os.path.join(
             self.config.output_dir_final,
@@ -739,6 +782,10 @@ Remove either the PDFs or PNGs and run again.
                 for num in plot_nums:
                     global_num = page_idx * self.config.plots_per_page + int(num)
                     all_results[element_type].append(global_num)
+
+            self._collect_csv_rows(Path(pdf_path).name, page_idx,
+                                   page_idx * self.config.plots_per_page,
+                                   detected, bounding_boxes)
 
             annotated = self.writer.draw_annotations(image_array, detected, bounding_boxes)
             output_path = os.path.join(
@@ -800,6 +847,7 @@ Remove either the PDFs or PNGs and run again.
             raise
 
         self.writer.save_results(self.config.output_dir_final, all_results)
+        self.writer.save_csv(self.config.output_dir_final, self.csv_rows)
 
         print(f"\n{'=' * 60}")
         print("[SUCCESS] CLASSIFICATION COMPLETE")
